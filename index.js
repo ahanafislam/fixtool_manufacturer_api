@@ -17,10 +17,12 @@ async function run() {
   try {
     await client.connect();
     const productsCollection = client.db("fixtool").collection("products");
+    const reviewCollection = client.db("fixtool").collection("review");
 
     /*==========================
         Endpoints For Products
     ============================*/
+    
     // Get All Products
     app.get('/products', async (req, res) => {
         const query = {};
@@ -28,6 +30,18 @@ async function run() {
         const products = await cursor.toArray();
         res.send(products);
     });
+
+    /*==========================
+        Endpoints For Review
+    ============================*/
+    
+    // Get All Review
+    app.get('/review', async (req, res) => {
+      const query = {};
+      const cursor = reviewCollection.find(query);
+      const review = await cursor.toArray();
+      res.send(review);
+  });
 
   }
   finally {
