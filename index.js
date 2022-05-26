@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion, MongoRuntimeError, Admin } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, MongoRuntimeError, Admin } = require('mongodb');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -29,6 +29,14 @@ async function run() {
         const cursor = productsCollection.find(query);
         const products = await cursor.toArray();
         res.send(products);
+    });
+
+    // Get Product Detail
+    app.get('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const productDetails = await productsCollection.findOne(query);
+      res.send(productDetails);
     });
 
     /*==========================
