@@ -18,6 +18,7 @@ async function run() {
     await client.connect();
     const productsCollection = client.db("fixtool").collection("products");
     const reviewCollection = client.db("fixtool").collection("review");
+    const orderCollection = client.db("fixtool").collection("order");
 
     /*==========================
         Endpoints For Products
@@ -38,6 +39,16 @@ async function run() {
       const productDetails = await productsCollection.findOne(query);
       res.send(productDetails);
     });
+
+    /*==========================
+        Endpoints For Order
+    ============================*/
+    // Create a new order
+    app.post('/order', async (req, res) => {
+      const order = req.body;
+      const result = await orderCollection.insertOne(order);
+      res.send(result);
+    })
 
     /*==========================
         Endpoints For Review
