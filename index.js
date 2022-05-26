@@ -46,6 +46,18 @@ async function run() {
     // Create a new order
     app.post('/order', async (req, res) => {
       const order = req.body;
+      // Update Product Product Quantity
+      const filter = {_id: ObjectId(order.products_id)};
+      const product = await productsCollection.findOne(filter);
+      const options = {upsert: true};
+      const newStock = parseInt(product.availableStock) - parseInt(order.order_quantity)
+      const updateStock = {
+        $set: {
+          availableStock: newStock
+        }
+      }
+      const productResult = await productsCollection.updateOne(filter, updateStock, options);
+
       const result = await orderCollection.insertOne(order);
       res.send(result);
     })
