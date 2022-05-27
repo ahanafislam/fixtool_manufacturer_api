@@ -104,7 +104,14 @@ async function run() {
       const cursor = reviewCollection.find(query);
       const review = await cursor.toArray();
       res.send(review);
-  });
+    });
+
+    // Post Some Review
+    app.post('/review', async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
 
   }
   finally {
