@@ -72,6 +72,14 @@ async function run() {
       res.send(orders);
     });
 
+    // For Delete order
+    app.delete('/order/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = {user_email: email};
+      const result = await orderCollection.deleteOne(filter);
+      res.send(result);
+    })
+
     /*==========================
         Endpoints For Review
     ============================*/
