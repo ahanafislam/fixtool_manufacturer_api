@@ -46,6 +46,7 @@ async function run() {
     // Create a new order
     app.post('/order', async (req, res) => {
       const order = req.body;
+      
       // Update Product Product Quantity
       const filter = {_id: ObjectId(order.products_id)};
       const product = await productsCollection.findOne(filter);
@@ -61,6 +62,15 @@ async function run() {
       const result = await orderCollection.insertOne(order);
       res.send(result);
     })
+
+    // Get user order by there Email
+    app.get('/my_order', async (req, res) => {
+      const email = req.query.email;
+      const query = {user_email: email};
+      const cursor = orderCollection.find(query);
+      const orders = await cursor.toArray();
+      res.send(orders);
+    });
 
     /*==========================
         Endpoints For Review
