@@ -73,10 +73,24 @@ async function run() {
     });
 
     // For Delete order
-    app.delete('/order/:email', async (req, res) => {
-      const email = req.params.email;
-      const filter = {user_email: email};
-      const result = await orderCollection.deleteOne(filter);
+    app.delete('/order/:id', async (req, res) => {
+      const id = req.params.id;
+      const orderFilter = {_id: ObjectId(id)};
+      const order = await orderCollection.findOne(orderFilter);
+      // Update Product Product Quantity
+      const productFilter = {_id: ObjectId(order.products_id)};
+      const product = await productsCollection.findOne(productFilter);
+      const options = {upsert: true};
+      const newStock = parseInt(product.availableStock) + parseInt(order.order_quantity)
+      const updateStock = {
+        $set: {
+          availableStock: newStock
+        }
+      }
+      const productResult = await productsCollection.updateOne(productFilter, updateStock, options);
+
+      // Delate order
+      const result = await orderCollection.deleteOne(orderFilter);
       res.send(result);
     })
 
