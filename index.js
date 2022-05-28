@@ -36,6 +36,18 @@ async function run() {
     const orderCollection = client.db("fixtool").collection("order");
     const usersCollection = client.db("fixtool").collection("users");
 
+    // Check admin access
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      const requesterAccount = await usersCollection.findOne({ email: requester });
+      if (requesterAccount.role === 'admin') {
+        next();
+      }
+      else {
+        res.status(403).send({ message: 'forbidden' });
+      }
+    }
+
     /*==========================
         Endpoints For Products
     ============================*/
@@ -55,6 +67,13 @@ async function run() {
       const productDetails = await productsCollection.findOne(query);
       res.send(productDetails);
     });
+
+    // Add product endpoint
+    app.post('/products', verifyJWT, verifyAdmin, async (req, res) => {
+      const product = req.body;
+      const result = await productsCollection.insertOne(product);
+      res.send(result);
+    })
 
     /*==========================
         Endpoints For Order
@@ -153,6 +172,45 @@ async function run() {
       res.send({ result, token });
     });
 
+    // Get Single user
+    app.get('/user/profile/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {email:email};
+      const cursor = usersCollection.find(query);
+      const user = await cursor.toArray();
+      res.send(user);
+    });
+
+    // Update user information
+    app.put('/user/update/:email', verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      const email = req.params.email;
+
+      if(decodedEmail === email) {
+        const user = req.body;
+        const filter = {email: email};
+        const options = {upsert: true};
+        const updateDoc = {
+          $set: user,
+        }
+        const result = await usersCollection.updateOne(filter, updateDoc, options);
+        return res.send(result);
+      }
+      else {
+        return res.status(403).send({status: 403, message: 'forbidden access' });
+      }
+    });
+
+    /*=====================================
+        Endpoints For Admins
+    ======================================*/
+    // Send true if the user is admin
+    app.get('/admin/:email', async(req, res) => {
+      const email = req.params.email;
+      const user = await usersCollection.findOne({email: email});
+      const isAdmin = user.role === 'admin';
+      res.send({admin: isAdmin})
+    })
   }
   finally {
 
