@@ -16,12 +16,12 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).send({ message: 'UnAuthorized' });
+    return res.status(401).send({ status: 401, message: 'UnAuthorized' });
   }
   const token = authHeader.split(' ')[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
     if (err) {
-      return res.status(403).send({ message: 'Forbidden Access' })
+      return res.status(403).send({ status: 403, message: 'Forbidden Access' });
     }
     req.decoded = decoded;
     next();
@@ -90,7 +90,7 @@ async function run() {
         return res.send(orders);
       }
       else {
-        res.status(403).send({message: "Forbidden Access"});
+        return res.status(403).send({status: 403, message: 'forbidden access' });
       }
     });
 
