@@ -75,6 +75,14 @@ async function run() {
       res.send(result);
     })
 
+    // Delate all product endpoint
+    app.delete('/products/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: ObjectId(id)};
+      const result = await productsCollection.deleteOne(filter);
+      res.send(result);
+    })
+
     /*==========================
         Endpoints For Order
     ============================*/
@@ -113,8 +121,16 @@ async function run() {
       }
     });
 
+    // Get All order
+    app.get('/order', verifyJWT, verifyAdmin, async (req, res) => {
+      const query = {};
+      const cursor = orderCollection.find(query);
+      const orders = await cursor.toArray();
+      res.send(orders);
+    });
+
     // For Delete order
-    app.delete('/order/:id', async (req, res) => {
+    app.delete('/order/:id', verifyJWT, async (req, res) => {
       const id = req.params.id;
       const orderFilter = {_id: ObjectId(id)};
       const order = await orderCollection.findOne(orderFilter);
@@ -133,6 +149,18 @@ async function run() {
       // Delate order
       const result = await orderCollection.deleteOne(orderFilter);
       res.send(result);
+    })
+
+    // Make A normal user to admin
+    app.put('/order/status/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: ObjectId(id)};
+      const options = {upsert: true};
+      const updateDoc = {
+        $set: {status: 'approved'}
+      };
+      const result = await orderCollection.updateOne(filter, updateDoc, options);
+      return res.send(result);
     })
 
     /*==========================
@@ -181,6 +209,14 @@ async function run() {
       res.send(user);
     });
 
+    // Get All user
+    app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
+      const query = {};
+      const cursor = usersCollection.find(query);
+      const users = await cursor.toArray();
+      res.send(users);
+    });
+
     // Update user information
     app.put('/user/update/:email', verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
@@ -210,6 +246,18 @@ async function run() {
       const user = await usersCollection.findOne({email: email});
       const isAdmin = user.role === 'admin';
       res.send({admin: isAdmin})
+    })
+
+    // Make A normal user to admin
+    app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const filter = {email: email};
+      const options = {upsert: true};
+      const updateDoc = {
+        $set: {role: 'admin'}
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc, options);
+      return res.send(result);
     })
   }
   finally {
