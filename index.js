@@ -80,12 +80,18 @@ async function run() {
     })
 
     // Get user order by there Email
-    app.get('/my_order', async (req, res) => {
+    app.get('/my_order', verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
       const email = req.query.email;
-      const query = {user_email: email};
-      const cursor = orderCollection.find(query);
-      const orders = await cursor.toArray();
-      res.send(orders);
+      if(email === decodedEmail) {
+        const query = {user_email: email};
+        const cursor = orderCollection.find(query);
+        const orders = await cursor.toArray();
+        return res.send(orders);
+      }
+      else {
+        res.status(403).send({message: "Forbidden Access"});
+      }
     });
 
     // For Delete order
